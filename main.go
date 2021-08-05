@@ -131,5 +131,6 @@ func main() {
 		}
 	}).Methods(http.MethodGet)
 
-	http.ListenAndServe(":9090", r)
+	err := http.ListenAndServe(":9090", r)
+	fmt.Println(err)
 }
