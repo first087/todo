@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/mux"
 )
 
@@ -35,7 +36,32 @@ func New(task string) {
 	}
 }
 
-func AddTask(rw http.ResponseWriter, r *http.Request) {
+func AddTask(c *gin.Context) {
+	var task NewTaskTodo
+	if err := c.Bind(&task); err != nil {
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	New(task.Task)
+}
+
+func MaskDone(c *gin.Context) {
+	index := c.Param("index")
+	i, err := strconv.Atoi(index)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	tasks[i].Done = true
+}
+
+func GetTodo(c *gin.Context) {
+	c.JSON(http.StatusOK, List())
+}
+
+func AddTaskG(rw http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var task NewTaskTodo
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
@@ -46,7 +72,7 @@ func AddTask(rw http.ResponseWriter, r *http.Request) {
 	New(task.Task)
 }
 
-func MarkDone(rw http.ResponseWriter, r *http.Request) {
+func MarkDoneG(rw http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	vars := mux.Vars(r)
@@ -59,7 +85,7 @@ func MarkDone(rw http.ResponseWriter, r *http.Request) {
 	tasks[index].Done = true
 }
 
-func GetTodo(rw http.ResponseWriter, r *http.Request) {
+func GetTodoG(rw http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(rw).Encode(tasks); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return

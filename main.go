@@ -70,6 +70,10 @@ func main() {
 		})
 	})
 
+	r.PUT("/todos", todo.AddTask)
+	r.PUT("/todos/:index", todo.MaskDone)
+	r.GET("/todos", todo.GetTodo)
+
 	// r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	r.Run(":9090")
 }
@@ -99,9 +103,9 @@ func mainGorillaMux() {
 
 	api := r.NewRoute().Subrouter()
 	api.Use(authMiddleware)
-	api.HandleFunc("/todos", todo.AddTask).Methods(http.MethodPut)
-	api.HandleFunc("/todos/{index}", todo.MarkDone).Methods(http.MethodPut)
-	api.HandleFunc("/todos", todo.GetTodo).Methods(http.MethodGet)
+	api.HandleFunc("/todos", todo.AddTaskG).Methods(http.MethodPut)
+	api.HandleFunc("/todos/{index}", todo.MarkDoneG).Methods(http.MethodPut)
+	api.HandleFunc("/todos", todo.GetTodoG).Methods(http.MethodGet)
 
 	err := http.ListenAndServe(":9090", r)
 	fmt.Println(err)

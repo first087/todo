@@ -3,3 +3,6 @@ $ go env -w CGO_ENABLED=0
 
 Run test and test coverage
 $ go test . -cover
+
+- graceful shutdown
+- race condition
