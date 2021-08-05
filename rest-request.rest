@@ -1,0 +1,13 @@
+GET http://localhost:9090/todos
+
+GET http://localhost:9090/auth
+
+PUT http://localhost:9090/todos
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjgxNDE2MDYsImlzcyI6InRlc3QifQ.BcOX6mo6NEhCJKBdi2k-52f8G7Igxfg2_J1CXZFDG5k
+
+{
+  "task": "new"
+}
+
+PUT http://localhost:9090/todos/3
