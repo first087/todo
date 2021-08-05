@@ -10,6 +10,7 @@ import (
 	"todo/todo"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/mux"
 )
 
@@ -49,6 +50,31 @@ func authMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	r := gin.Default()
+	r.GET("/auth", func(c *gin.Context) {
+		mySigningKey := []byte("password")
+		claims := &jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(2 * time.Minute).Unix(),
+			Issuer:    "test",
+		}
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		ss, err := token.SignedString(mySigningKey)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, nil)
+			return
+		}
+
+		c.JSON(http.StatusOK, map[string]string{
+			"token": ss,
+		})
+	})
+
+	// r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run(":9090")
+}
+
+func mainGorillaMux() {
 	r := mux.NewRouter()
 	r.Use(loggingMiddleware)
 
