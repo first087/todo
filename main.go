@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,6 +40,13 @@ func List() map[int]*Task {
 	return tasks
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.RequestURI)
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	New("task1")
 	New("task2")
@@ -51,6 +59,7 @@ func main() {
 	fmt.Println(List())
 
 	r := mux.NewRouter()
+	r.Use(loggingMiddleware)
 
 	r.HandleFunc("/auth", func(rw http.ResponseWriter, r *http.Request) {
 		mySigningKey := []byte("password")
