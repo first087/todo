@@ -36,7 +36,7 @@ func New(task string) {
 	}
 }
 
-func AddTask(c *gin.Context) {
+func AddTaskGin(c *gin.Context) {
 	var task NewTaskTodo
 	if err := c.Bind(&task); err != nil {
 		c.JSON(http.StatusBadRequest, nil)
@@ -46,7 +46,7 @@ func AddTask(c *gin.Context) {
 	New(task.Task)
 }
 
-func MaskDone(c *gin.Context) {
+func MaskDoneGin(c *gin.Context) {
 	index := c.Param("index")
 	i, err := strconv.Atoi(index)
 	if err != nil {
@@ -57,7 +57,7 @@ func MaskDone(c *gin.Context) {
 	tasks[i].Done = true
 }
 
-func GetTodo(c *gin.Context) {
+func GetTodoGin(c *gin.Context) {
 	c.JSON(http.StatusOK, List())
 }
 

@@ -49,7 +49,7 @@ func authMiddlewareGorillaMux(next http.Handler) http.Handler {
 	})
 }
 
-func authMiddleware(c *gin.Context) {
+func authMiddlewareGin(c *gin.Context) {
 	fmt.Println("Use authMiddleware")
 
 	tokenString := c.GetHeader("Authorization")
@@ -97,11 +97,11 @@ func main() {
 	})
 
 	api := r.Group("")
-	api.Use(authMiddleware)
+	api.Use(authMiddlewareGin)
 
-	api.PUT("/todos", todo.AddTask)
-	api.PUT("/todos/:index", todo.MaskDone)
-	api.GET("/todos", todo.GetTodo)
+	api.PUT("/todos", todo.AddTaskGin)
+	api.PUT("/todos/:index", todo.MaskDoneGin)
+	api.GET("/todos", todo.GetTodoGin)
 
 	// r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	r.Run(":9090")
