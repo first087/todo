@@ -1,0 +1,2 @@
+Disable cgo
+$ go env -w CGO_ENABLED=0
