@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 )
 
@@ -48,6 +50,25 @@ func main() {
 	fmt.Println(List())
 
 	r := mux.NewRouter()
+
+	r.HandleFunc("/auth", func(rw http.ResponseWriter, r *http.Request) {
+		mySigningKey := []byte("password")
+		claims := &jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(2 * time.Minute).Unix(),
+			Issuer:    "test",
+		}
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		ss, err := token.SignedString(mySigningKey)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(rw).Encode(map[string]string{
+			"token": ss,
+		})
+	})
 
 	r.HandleFunc("/todos", func(rw http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
