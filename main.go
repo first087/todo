@@ -14,14 +14,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func loggingMiddleware(next http.Handler) http.Handler {
+func loggingMiddlewareGorillaMux(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.RequestURI)
 		next.ServeHTTP(w, r)
 	})
 }
 
-func authMiddleware(next http.Handler) http.Handler {
+func authMiddlewareGorillaMux(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Use authMiddleware")
 
@@ -49,6 +49,32 @@ func authMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func authMiddleware(c *gin.Context) {
+	fmt.Println("Use authMiddleware")
+
+	tokenString := c.GetHeader("Authorization")
+
+	tokenString = strings.ReplaceAll(tokenString, "Bearer ", "")
+
+	fmt.Println(tokenString)
+
+	mySigningKey := []byte("password")
+	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return mySigningKey, nil
+	})
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	c.Next()
+}
+
 func main() {
 	r := gin.Default()
 	r.GET("/auth", func(c *gin.Context) {
@@ -70,9 +96,12 @@ func main() {
 		})
 	})
 
-	r.PUT("/todos", todo.AddTask)
-	r.PUT("/todos/:index", todo.MaskDone)
-	r.GET("/todos", todo.GetTodo)
+	api := r.Group("")
+	api.Use(authMiddleware)
+
+	api.PUT("/todos", todo.AddTask)
+	api.PUT("/todos/:index", todo.MaskDone)
+	api.GET("/todos", todo.GetTodo)
 
 	// r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	r.Run(":9090")
@@ -80,7 +109,7 @@ func main() {
 
 func mainGorillaMux() {
 	r := mux.NewRouter()
-	r.Use(loggingMiddleware)
+	r.Use(loggingMiddlewareGorillaMux)
 
 	r.HandleFunc("/auth", func(rw http.ResponseWriter, r *http.Request) {
 		mySigningKey := []byte("password")
@@ -102,7 +131,7 @@ func mainGorillaMux() {
 	})
 
 	api := r.NewRoute().Subrouter()
-	api.Use(authMiddleware)
+	api.Use(authMiddlewareGorillaMux)
 	api.HandleFunc("/todos", todo.AddTaskG).Methods(http.MethodPut)
 	api.HandleFunc("/todos/{index}", todo.MarkDoneG).Methods(http.MethodPut)
 	api.HandleFunc("/todos", todo.GetTodoG).Methods(http.MethodGet)
