@@ -73,7 +73,9 @@ func main() {
 
 	api := r.NewRoute().Subrouter()
 	api.Use(authMiddleware)
-	api.HandleFunc("/todos", todo.AddTask).Methods(http.MethodPut)
+
+	todoApp := todo.NewApp(todo.NewJSONSerializer())
+	api.HandleFunc("/todos", todoApp.AddTask).Methods(http.MethodPut)
 	api.HandleFunc("/todos/{index}", todo.MarkDone).Methods(http.MethodPut)
 	api.HandleFunc("/todos", todo.GetTodo).Methods(http.MethodGet)
 

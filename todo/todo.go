@@ -2,6 +2,7 @@ package todo
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -35,10 +36,40 @@ func New(task string) {
 	}
 }
 
-func AddTask(rw http.ResponseWriter, r *http.Request) {
+type Serializer interface {
+	Decode(io.Reader, interface{}) error
+	Encode(io.Writer, interface{}) error
+}
+
+type JSONSerializer struct{}
+
+func (j JSONSerializer) Decode(r io.Reader, v interface{}) error {
+	return json.NewDecoder(r).Decode(v)
+}
+
+func (j JSONSerializer) Encode(w io.Writer, v interface{}) error {
+	return json.NewEncoder(w).Encode(v)
+}
+
+func NewJSONSerializer() JSONSerializer {
+	return JSONSerializer{}
+}
+
+type App struct {
+	serialize Serializer
+}
+
+func NewApp(serialize Serializer) *App {
+	return &App{
+		serialize: serialize,
+	}
+}
+
+func (app *App) AddTask(rw http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var task NewTaskTodo
-	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+	if err := app.serialize.Decode(r.Body, &task); err != nil {
+		// if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -60,7 +91,7 @@ func MarkDone(rw http.ResponseWriter, r *http.Request) {
 }
 
 func GetTodo(rw http.ResponseWriter, r *http.Request) {
-	if err := json.NewEncoder(rw).Encode(tasks); err != nil {
+	if err := json.NewEncoder(rw).Encode(List()); err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
