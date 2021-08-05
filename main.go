@@ -11,6 +11,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/gorilla/mux"
 )
 
@@ -76,6 +77,16 @@ func authMiddlewareGin(c *gin.Context) {
 }
 
 func main() {
+	app := fiber.New()
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World 👋!")
+	})
+
+	app.Listen(":9090")
+}
+
+func mainGin() {
 	r := gin.Default()
 	r.GET("/auth", func(c *gin.Context) {
 		mySigningKey := []byte("password")
