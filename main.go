@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -71,6 +72,26 @@ func main() {
 	})
 
 	r.HandleFunc("/todos", func(rw http.ResponseWriter, r *http.Request) {
+		tokenString := r.Header.Get("Authorization")
+
+		tokenString = strings.ReplaceAll(tokenString, "Bearer ", "")
+
+		fmt.Println(tokenString)
+
+		mySigningKey := []byte("password")
+		_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			return mySigningKey, nil
+		})
+
+		if err != nil {
+			rw.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
 		defer r.Body.Close()
 		var task NewTaskTodo
 		if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
