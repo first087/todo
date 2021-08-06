@@ -14,7 +14,7 @@ func post() {
 	fmt.Println("Post begin")
 
 	url := "http://localhost:9090/todos"
-	method := "POST"
+	method := "PUT"
 
 	msg, err := msgpack.Marshal(&Task{Task: "task1"})
 	if err != nil {
