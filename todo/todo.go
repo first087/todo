@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 var index int
@@ -53,6 +54,20 @@ func (j JSONSerializer) Encode(w io.Writer, v interface{}) error {
 
 func NewJSONSerializer() JSONSerializer {
 	return JSONSerializer{}
+}
+
+type MessagePackSerializer struct{}
+
+func (MessagePackSerializer) Decode(r io.Reader, v interface{}) error {
+	return msgpack.NewDecoder(r).Decode(v)
+}
+
+func (MessagePackSerializer) Encode(w io.Writer, v interface{}) error {
+	return msgpack.NewEncoder(w).Encode(v)
+}
+
+func NewMessagePackSerializer() MessagePackSerializer {
+	return MessagePackSerializer{}
 }
 
 type App struct {

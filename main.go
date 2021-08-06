@@ -74,10 +74,11 @@ func main() {
 	api := r.NewRoute().Subrouter()
 	api.Use(authMiddleware)
 
-	todoApp := todo.NewApp(todo.NewJSONSerializer())
-	api.HandleFunc("/todos", todoApp.AddTask).Methods(http.MethodPut)
-	api.HandleFunc("/todos/{index}", todo.MarkDone).Methods(http.MethodPut)
-	api.HandleFunc("/todos", todo.GetTodo).Methods(http.MethodGet)
+	// todoApp := todo.NewApp(todo.NewJSONSerializer())
+	todoApp := todo.NewApp(todo.NewMessagePackSerializer())
+	r.HandleFunc("/todos", todoApp.AddTask).Methods(http.MethodPut)
+	r.HandleFunc("/todos/{index}", todo.MarkDone).Methods(http.MethodPut)
+	r.HandleFunc("/todos", todo.GetTodo).Methods(http.MethodGet)
 
 	err := http.ListenAndServe(":9090", r)
 	fmt.Println(err)
