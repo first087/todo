@@ -99,9 +99,9 @@ func main() {
 	api := r.Group("")
 	api.Use(authMiddlewareGin)
 
-	api.PUT("/todos", todo.AddTaskGin)
-	api.PUT("/todos/:index", todo.MaskDoneGin)
-	api.GET("/todos", todo.GetTodoGin)
+	r.PUT("/todos", todo.AddTaskGin)
+	r.PUT("/todos/:index", todo.MaskDoneGin)
+	r.GET("/todos", todo.GetTodoGin)
 
 	// r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	r.Run(":9090")
