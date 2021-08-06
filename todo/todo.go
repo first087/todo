@@ -5,12 +5,15 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var index int
 var tasks map[int]*Task = make(map[int]*Task)
 
 type Task struct {
+	gorm.Model
 	Title string
 	Done  bool
 }
@@ -35,13 +38,23 @@ func New(task string) {
 }
 
 func AddTask(c *gin.Context) {
+	db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+
+	db.AutoMigrate(&Task{})
+
 	var task NewTaskTodo
 	if err := c.Bind(&task); err != nil {
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	New(task.Task)
+	// New(task.Task)
+	db.Create(task)
 }
 
 func MaskDone(c *gin.Context) {
